@@ -1,1 +1,1 @@
-# tokka-swe-challenge
+# Tokka Labs SWE Challenge

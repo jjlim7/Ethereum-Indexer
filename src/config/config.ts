@@ -1,9 +1,11 @@
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 
 dotenv.config();
 
 export default {
-  etherscanApiKey: process.env.ETHERSCAN_API_KEY,
-  mongoUri: process.env.MONGO_URI || 'mongodb://localhost:27017/transactions',
-  port: process.env.PORT || 5000,
+  etherscanApiKey: process.env.ETHERSCAN_API_KEY!,
+  mongoUri: process.env.MONGO_URI!,
+  web3Provider: process.env.INFURA_MAINNET_WS!,
+  targetAddress: process.env.TARGET_ADDRESS!,
+  port: process.env.PORT!,
 };

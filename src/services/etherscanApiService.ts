@@ -1,22 +1,11 @@
 import axios from "axios";
 import config from "../config/config";
-import { getEthPriceAtTime, getEthPriceAtTimeFromDb } from "./ethPriceService";
-import { ITransaction, Transaction } from "../models/transactionModel"; // Import the Transaction model
+import { getEthPriceAtTimeFromDb } from "./ethPriceService";
+import { ITransaction } from "../models/transactionModel"; // Import the Transaction model
 import { sleep } from "../utils/sleep";
 
 const ETHERSCAN_BASE_URL = "https://api.etherscan.io/api";
 const BACKOFF_DELAY = 60000; // 60 seconds in milliseconds for rate limit backoff
-
-// Function to fetch a single transaction fee
-export const getTransactionFee = async (hash: string) => {
-  // Query the MongoDB database for the transaction using the hash
-  const transaction = await Transaction.findOne({
-    hash: hash.toLowerCase(),
-  }).exec();
-  if (!transaction) return null;
-
-  return transaction;
-};
 
 // Function to fetch historical transactions
 export const getHistoricalTransactions = async (query: any): Promise<any> => {
@@ -37,8 +26,7 @@ export const getHistoricalTransactions = async (query: any): Promise<any> => {
       console.error(
         `Error fetching block ${startblock} from Etherscan... HTTP ${status}`
       );
-      await sleep(BACKOFF_DELAY);
-      return getHistoricalTransactions(query);
+      return;
     }
 
     // Calculate transaction fee in USDT for each transaction
@@ -56,6 +44,7 @@ export const getHistoricalTransactions = async (query: any): Promise<any> => {
         return {
           gasUsed: transaction.gasUsed,
           gasPrice: transaction.gasPrice,
+          value: transaction.value,
           timeStamp: timeStampInMilliseconds, // Use milliseconds for the timestamp
           transactionFeeInUSDT: transactionFeeInUSDT,
           hash: transaction.hash,

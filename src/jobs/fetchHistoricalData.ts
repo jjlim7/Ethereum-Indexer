@@ -1,3 +1,4 @@
+import { sendToKafka } from "../kafka/producer";
 import { getHistoricalTransactions } from "../services/etherscanApiService";
 import {
   getLastProcessedBlock,
@@ -9,13 +10,16 @@ import { sleep } from "../utils/sleep";
 // batch processing job to fetch and process historical transactions
 export const runBatchJob = async () => {
   const endBlock = 13328161; // Adjust range for how much historical data to index
-  const pageSize = 10000; // Fetch 100 transactions per request
+  const pageSize = 1000; // Fetch 100 transactions per request
 
   let hasMoreData = true;
 
   try {
     // Get the last processed block from the state
-    let lastProcessedBlock = (await getLastProcessedBlock()) + 1;
+    let lastProcessedBlock = await getLastProcessedBlock();
+    if (lastProcessedBlock > 0) {
+      lastProcessedBlock += 1;
+    }
 
     let page = 1; // Initialize the page to start with
 
@@ -39,10 +43,8 @@ export const runBatchJob = async () => {
         break;
       }
 
-      // index the fetched transaction data
-      await indexTransactionData(transactions);
-
-      console.log(`Indexed page ${page} of transactions.`);
+      await sendToKafka(transactions);
+      console.log(`Sent page ${page} of transactions to Kafka.`);
 
       // get highest block number in the current batch
       const highestBlock = Math.max(

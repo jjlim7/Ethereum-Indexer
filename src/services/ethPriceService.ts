@@ -82,7 +82,7 @@ export const fetchAndSaveEthPriceHistory = async () => {
 export const getEthPriceAtTimeFromDb = async (timeStamp: number) => {
   try {
     const datestr = formatDateForMongoDB(timeStamp);
-    const ethPriceEntry = await EthPrice.findOne({ timeStamp: datestr }).exec();
+    const ethPriceEntry = await EthPrice.findOne({ timeStamp: datestr });
 
     if (!ethPriceEntry) {
       console.error("ETH Price not found for ", datestr);

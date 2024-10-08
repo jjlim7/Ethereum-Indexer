@@ -1,18 +1,18 @@
 import { Request, Response } from "express";
 import {
-  getTransactionFee,
-  getHistoricalTransactions,
-} from "../services/etherscanApiService";
+  fetchTransactionByHash,
+  getRecentTransactions,
+} from "../services/transactionService";
 
 export const getTransactionByHash = async (req: Request, res: Response) => {
   const { hash } = req.params;
   try {
-    const transaction = await getTransactionFee(hash);
-    if (!transaction) {
+    const transactions = await fetchTransactionByHash(hash);
+    if (!transactions) {
       res.status(404).json({ message: "Transaction not found." });
       return;
     }
-    res.json(transaction);
+    res.json(transactions);
     return;
   } catch (error) {
     res.status(500).json({ message: "Internal server error.", error });
@@ -20,17 +20,12 @@ export const getTransactionByHash = async (req: Request, res: Response) => {
   }
 };
 
-export const getHistoricalTxns = async (req: Request, res: Response) => {
-  const { startblock, endblock, page, offset } = req.query;
+// Fetch the first 100 transactions sorted by date
+export const getTransactions = async (req: Request, res: Response) => {
   try {
-    const transactions = await getHistoricalTransactions({
-      startblock: startblock?.toString(),
-      endblock: endblock?.toString(),
-      page: page?.toString(),
-      offset: offset?.toString(),
-    });
-    if (!transactions) {
-      res.status(404).json({ message: "Historical Transactions not found." });
+    const transactions = await getRecentTransactions(500); // Fetch the first 500 transactions
+    if (!transactions || transactions.length === 0) {
+      res.status(404).json({ message: "No transactions found." });
       return;
     }
     res.json(transactions);

@@ -1,9 +1,13 @@
 # Tokka Labs SWE Challenge
 
-## Overview
-![alt text](screenshots/architecture.png)
+## Table of Contents
+1. [Environment Variables](#environment-variables)
+2. [Running the Application](#running-the-application)
+   - [Using Docker](#using-docker)
+   - [Testing REST API Interface via Swagger UI](#testing-rest-api-interface-via-swagger-ui)
+3. [Architectural Considerations](#architectural-considerations)
 
-## Environment Variables
+## Setup Environment Variables
 Make sure to create a .env file in the root directory of the project with the following variables:
 ```
 ETHERSCAN_API_KEY=<your-etherscan-api-key>
@@ -44,6 +48,7 @@ http://localhost:3000/api-docs
 
 ## Architectural Considerations
 
+![alt text](screenshots/architecture.png)
 1. Event-Driven Architecture: Asynchronous Processing using Kafka
    - Consideration: Event-driven architecture provides high decoupling between services, allowing the system to handle high transaction volumes efficiently with each component operating asynchronously. 
 

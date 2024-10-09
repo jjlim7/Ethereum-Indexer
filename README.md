@@ -1,1 +1,58 @@
 # Tokka Labs SWE Challenge
+
+## Overview
+![alt text](screenshots/architecture.png)
+
+## Environment Variables
+Make sure to create a .env file in the root directory of the project with the following variables:
+```
+ETHERSCAN_API_KEY=<your-etherscan-api-key>
+MONGO_URI=<your-mongodb-uri>
+INFURA_MAINNET_WS=<your-infura-websocket-url>
+TARGET_ADDRESS=<your-target-smart-contract-address>
+KAFKA_BROKERS=<your-kafka-broker-address>
+```
+
+## Running the Application
+
+### Using Docker
+
+1. Build and start the application along with its dependencies (MongoDB, Kafka, and Zookeeper), run:
+
+```sh
+docker-compose up --build -d
+```
+
+2. To check logs for each component
+```sh
+docker-compose logs -f node-app
+docker-compose logs -f consumer-app
+```
+
+3. Run Test
+```sh
+docker compose run node-app npm run test -- BlockIndexerService.test.ts --forceExit
+docker compose run node-app npm run test -- EthPriceService.test.ts 
+```
+
+### Testing REST API Interface via Swagger UI
+
+Once the application is running, you can navigate to Swagger UI to execute APIs by visiting:
+```
+http://localhost:3000/api-docs
+```
+
+## Architectural Considerations
+
+1. Event-Driven Architecture: Asynchronous Processing using Kafka
+   - Consideration: Event-driven architecture provides high decoupling between services, allowing the system to handle high transaction volumes efficiently with each component operating asynchronously. 
+
+2. Websocket Streams for Live Data
+   - Consideration: By using Infura for blockchain events and Binance API for price updates, the architecture can handle real-time data flow with minimal delays, crucial for time-sensitive data like transaction fees.
+
+3. MongoDB (Database):
+   - Consideration: The choice of MongoDB is driven by its flexibility in handling different data structures, which is useful for both transaction logs and historical data.
+
+4. Circuit Breaker Pattern & Rate Limiting
+   - Consideration: If the system detects a failure in the real-time price fetch or blockchain data fetch, the circuit breaker stops the requests temporarily to prevent the system from wasting resources on repeated failed attempts and allows it to recover more gracefully.
+   - Additionally, a retry mechanism with backoff is implemented to gradually resume requests to the external services. This helps in reducing the load on the APIs while attempting to restore functionality.

@@ -1,8 +1,8 @@
-import { BlockIndexer } from "../src/services/blockIndexerService";
+import { BlockIndexer } from "../services/blockIndexerService";
 import Web3 from "web3";
-import { ethPriceWS } from "../src/services/ethPriceService"; // Import the ethPriceWS instance
-import { Transaction } from "../src/models/transactionModel"; // Assuming you have a Transaction model
-import config from "../src/config/config";
+import { ethPriceWS } from "../services/ethPriceService"; // Import the ethPriceWS instance
+import { Transaction } from "../models/transactionModel"; // Assuming you have a Transaction model
+import config from "../config/config";
 
 jest.mock("web3");
 jest.mock("../src/services/ethPriceService");

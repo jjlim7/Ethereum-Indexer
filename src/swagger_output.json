@@ -7,24 +7,14 @@
   },
   "servers": [
     {
-      "url": "http://localhost:3000",
+      "url": "http://localhost:3000/api",
       "description": ""
     }
   ],
   "paths": {
-    "/transactions/{hash}": {
+    "/transactions": {
       "get": {
-        "description": "Get transaction by hash",
-        "parameters": [
-          {
-            "name": "hash",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "description": "Get Recent Transactions (Sorted Descending By Timestamp)",
         "responses": {
           "200": {
             "description": "OK"
@@ -38,9 +28,19 @@
         }
       }
     },
-    "/transactions": {
+    "/transactions/{hash}": {
       "get": {
-        "description": "Get Recent Transactions (Sorted Descending By Timestamp)",
+        "description": "Get transaction by hash",
+        "parameters": [
+          {
+            "name": "hash",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"

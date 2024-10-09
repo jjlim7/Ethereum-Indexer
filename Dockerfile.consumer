@@ -14,8 +14,11 @@ RUN npm install -g ts-node typescript
 # Copy the rest of the application source code
 COPY . .
 
-# Build the TypeScript code
-RUN npm run build
+# Expose the port the app runs on
+# EXPOSE 5000
+
+ENV NODE_ENV=production
 
 # Define the command to start the Node.js server
-CMD [ "npm", "start" ]
+CMD ["ts-node", "./scripts/runConsumer.ts"]
+

@@ -89,7 +89,7 @@ export class BlockIndexer {
         console.log(`Saved transaction ${tx.hash}`);
       }
     } catch (error) {
-      console.error(`Error processing txHash ${txHash}:`, error);
+      console.log(`Error processing txHash ${txHash}:`);
     }
   }
 

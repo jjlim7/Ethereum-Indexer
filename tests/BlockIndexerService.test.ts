@@ -1,8 +1,8 @@
-import { BlockIndexer } from "../services/blockIndexerService";
+import { BlockIndexer } from "../src/services/blockIndexerService";
 import Web3 from "web3";
-import { ethPriceWS } from "../services/ethPriceService"; // Import the ethPriceWS instance
-import { Transaction } from "../models/transactionModel"; // Assuming you have a Transaction model
-import config from "../config/config";
+import { ethPriceWS } from "../src/services/ethPriceService"; // Import the ethPriceWS instance
+import { Transaction } from "../src/models/transactionModel"; // Assuming you have a Transaction model
+import config from "../src/config/config";
 
 jest.mock("web3");
 jest.mock("../src/services/ethPriceService");
@@ -31,6 +31,9 @@ describe("BlockIndexer", () => {
     (Web3 as any).mockImplementation(() => ({
       eth: {
         subscribe: mockSubscribe,
+        getTransaction: jest.fn(), // Mock getTransaction method
+        getTransactionReceipt: jest.fn(), // Mock getTransactionReceipt method
+        getBlock: jest.fn(), // Mock getBlock method
       },
     }));
 
@@ -98,15 +101,15 @@ describe("BlockIndexer", () => {
     const mockLatestPrice = 3500; // Mock ETH to USDT price
 
     // Mock web3.eth methods
-    (blockIndexer as any).web3.eth.getTransaction = jest
-      .fn()
-      .mockResolvedValue(mockTransaction);
-    (blockIndexer as any).web3.eth.getTransactionReceipt = jest
-      .fn()
-      .mockResolvedValue(mockReceipt);
-    (blockIndexer as any).web3.eth.getBlock = jest
-      .fn()
-      .mockResolvedValue(mockBlock);
+    (blockIndexer.getWeb3().eth.getTransaction as jest.Mock).mockResolvedValue(
+      mockTransaction
+    );
+    (
+      blockIndexer.getWeb3().eth.getTransactionReceipt as jest.Mock
+    ).mockResolvedValue(mockReceipt);
+    (blockIndexer.getWeb3().eth.getBlock as jest.Mock).mockResolvedValue(
+      mockBlock
+    );
 
     // Mock ethPriceWS method
     (ethPriceWS.getLatestPrice as jest.Mock).mockResolvedValue(mockLatestPrice);

@@ -3,13 +3,13 @@ import axios from "axios";
 import {
   getEthPriceAtTimeFromDb,
   ethPriceWS,
-} from "../services/ethPriceService";
-import { EthPrice } from "../models/ethPriceModel";
+} from "../src/services/ethPriceService";
+import { EthPrice } from "../src/models/ethPriceModel";
 import mongoose from "mongoose";
-import connectDB from "../config/database";
+import connectDB from "../src/config/database";
 
 // Mock the EthPrice model
-jest.mock("../src/models/EthPriceModel", () => ({
+jest.mock("../src/models/ethPriceModel", () => ({
   EthPrice: {
     findOne: jest.fn(),
     save: jest.fn(),

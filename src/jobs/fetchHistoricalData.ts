@@ -1,14 +1,16 @@
+import axios from "axios";
 import { sendToKafka } from "../kafka/producer";
+import { EthPrice } from "../models/ethPriceModel";
 import { getHistoricalTransactions } from "../services/etherscanApiService";
 import {
   getLastProcessedBlock,
   updateLastProcessedBlock,
 } from "../services/stateService";
-import { indexTransactionData } from "../utils/indexer";
+import { formatDateForMongoDB } from "../utils/dateformatter";
 import { sleep } from "../utils/sleep";
 
 // batch processing job to fetch and process historical transactions
-export const runBatchJob = async () => {
+export const fetchHistoricalEthBlockData = async () => {
   const endBlock = 13328161; // Adjust range for how much historical data to index
   const pageSize = 1000; // Fetch 100 transactions per request
 
@@ -67,5 +69,82 @@ export const runBatchJob = async () => {
     console.log("Batch job completed successfully.");
   } catch (error) {
     console.error("Error during batch job processing:", error);
+  }
+};
+
+// Function to fetch and save historical ETH prices
+export const fetchAndSaveEthPriceHistory = async () => {
+  let endTime = Date.now(); // Current time in milliseconds
+  const yearsAgo = 10;
+  let startTime = endTime - yearsAgo * 365 * 24 * 60 * 60 * 1000; // 4 years in milliseconds
+
+  const startDatestr = formatDateForMongoDB(startTime);
+
+  const minDate = await EthPrice.findOne().sort({ timeStamp: 1 });
+  if (minDate) {
+    endTime = new Date(minDate!.timeStamp).getTime();
+  }
+
+  if (startTime > endTime) {
+    console.log(
+      `Eth Price History from ${startDatestr} has already been indexed`
+    );
+    return;
+  }
+
+  while (startTime < endTime) {
+    try {
+      const request_params = {
+        symbol: "ETHUSDT",
+        interval: "1d",
+        startTime: startTime,
+      };
+
+      const response = await axios.get(
+        `https://api.binance.com/api/v3/klines`,
+        {
+          params: request_params,
+        }
+      );
+
+      const priceData = response.data;
+
+      // Check if there's no more data
+      if (priceData.length === 0) {
+        break;
+      }
+
+      // Loop through price data and save each entry to MongoDB
+      for (const entry of priceData) {
+        const [openTime, open, high, low, close, volume, closeTime] = entry;
+
+        let date = new Date(openTime);
+        date.setHours(0, 0, 0, 0);
+
+        const ethPriceDocument = new EthPrice({
+          ethPriceInUSDT: parseFloat(close), // Use the close price
+          timeStamp: date, // Use the open time for the timestamp
+        });
+
+        await ethPriceDocument.save().catch((err) => {
+          if (err.code !== 11000) {
+            // Ignore duplicate key errors (unique constraint)
+            console.error("Error saving ETH price:", err);
+          }
+        });
+      }
+
+      console.log(
+        `Fetched and saved ${priceData.length} records from ${new Date(
+          startTime
+        ).toISOString()}.`
+      );
+
+      // Update startTime to the last fetched record's open time
+      startTime = priceData[priceData.length - 1][0] + 1;
+    } catch (error) {
+      console.error("Error fetching ETH price history:", error);
+      throw error; // Rethrow the error for further handling
+    }
   }
 };

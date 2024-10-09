@@ -10,7 +10,7 @@ const BACKOFF_DELAY = 60000; // 60 seconds in milliseconds for rate limit backof
 // Function to fetch historical transactions
 export const getHistoricalTransactions = async (query: any): Promise<any> => {
   const { startblock, endblock, page, offset } = query;
-  const url = `${ETHERSCAN_BASE_URL}?module=account&action=tokentx&address=0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640&startblock=${startblock}&endblock=${endblock}&page=${page}&offset=${offset}&sort=asc&apiKey=${config.etherscanApiKey}`;
+  const url = `${ETHERSCAN_BASE_URL}?module=account&action=tokentx&address=${config.targetAddress}&startblock=${startblock}&endblock=${endblock}&page=${page}&offset=${offset}&sort=asc&apiKey=${config.etherscanApiKey}`;
 
   try {
     const { data, status } = await axios.get(url);

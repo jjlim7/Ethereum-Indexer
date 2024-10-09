@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import JSONBig from "json-bigint";
 import {
   fetchTransactionByHash,
   getRecentTransactions,
@@ -12,7 +13,12 @@ export const getTransactionByHash = async (req: Request, res: Response) => {
       res.status(404).json({ message: "Transaction not found." });
       return;
     }
-    res.json(transactions);
+    const serializedTransactions = JSON.parse(
+      JSON.stringify(transactions, (key, value) =>
+        typeof value === "bigint" ? value.toString() : value
+      )
+    );
+    res.json(serializedTransactions);
     return;
   } catch (error) {
     res.status(500).json({ message: "Internal server error.", error });
@@ -28,7 +34,12 @@ export const getTransactions = async (req: Request, res: Response) => {
       res.status(404).json({ message: "No transactions found." });
       return;
     }
-    res.json(transactions);
+    const serializedTransactions = JSON.parse(
+      JSON.stringify(transactions, (key, value) =>
+        typeof value === "bigint" ? value.toString() : value
+      )
+    );
+    res.json(serializedTransactions);
     return;
   } catch (error) {
     res.status(500).json({ message: "Error fetching transactions", error });

@@ -1,7 +1,7 @@
 import Web3 from "web3";
 import config from "../config/config";
 import { Transaction } from "../models/transactionModel";
-import { getEthPriceAtTime } from "./ethPriceService";
+import { ethPriceWS } from "./ethPriceService";
 
 interface IUniswapAbi {
   sender: string;
@@ -46,10 +46,10 @@ export class BlockIndexer {
       const receipt = await this.web3.eth.getTransactionReceipt(txHash);
       const block = await this.web3.eth.getBlock(tx.blockNumber);
 
-      const ethToUsdtPrice = await getEthPriceAtTime();
+      const ethToUsdtPrice = await ethPriceWS.getLatestPrice();
       const transactionFeeInETH =
         (Number(receipt.gasUsed) * Number(tx.gasPrice)) / 1e18; // Convert Wei to ETH
-      const transactionFeeInUSDT = transactionFeeInETH * ethToUsdtPrice;
+      const transactionFeeInUSDT = transactionFeeInETH * ethToUsdtPrice!;
 
       const contractAddress = config.targetAddress;
 

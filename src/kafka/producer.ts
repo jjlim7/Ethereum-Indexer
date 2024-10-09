@@ -2,8 +2,18 @@ import { kafka } from "../config/kafkaConfig";
 
 const producer = kafka.producer();
 
+// Function to connect to producer
+export const connectKafkaProducer = async () => {
+  try {
+    await producer.connect();
+    console.log("Connected to Kafka producer.");
+  } catch (error) {
+    console.error("Error connecting to Kafka producer:", error);
+    throw error; // Rethrow the error for handling in the calling function
+  }
+};
+
 export const sendToKafka = async (transactions: any) => {
-  await producer.connect();
   try {
     // Batch transactions into smaller chunks (e.g., batches of 100)
     const batchSize = 100;
@@ -24,7 +34,5 @@ export const sendToKafka = async (transactions: any) => {
     console.log("Transaction data sent to Kafka successfully.");
   } catch (error) {
     console.error("Error sending data to Kafka:", error);
-  } finally {
-    await producer.disconnect();
   }
 };

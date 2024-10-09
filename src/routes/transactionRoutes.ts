@@ -7,7 +7,7 @@ import {
 const router = Router();
 
 // Route to get transaction by hash
-router.get("/transaction/:hash", getTransactionByHash);
+router.get("/transactions/:hash", getTransactionByHash);
 
 // Route to get recent transactions
 router.get("/transactions", getTransactions);

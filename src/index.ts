@@ -1,20 +1,28 @@
 import app from "./app";
-import { runBatchJob } from "./jobs/fetchHistoricalData";
+import {
+  fetchAndSaveEthPriceHistory,
+  fetchHistoricalEthBlockData,
+} from "./jobs/fetchHistoricalData";
 import config from "./config/config";
 import connectDB from "./config/database";
 import { BlockIndexer } from "./services/blockIndexerService";
-import { fetchAndSaveEthPriceHistory } from "./services/ethPriceService";
+import { connectKafkaProducer } from "./kafka/producer";
 
 const startApp = async () => {
   try {
+    // Connect to MongoDB
     await connectDB();
+
+    // Connect to Kafka producer
+    await connectKafkaProducer();
 
     // Fetch and save historical ETH prices
     await fetchAndSaveEthPriceHistory();
 
-    // Start the batch job
-    await runBatchJob();
+    // Start batch processing for historical ETH data from Etherscan
+    await fetchHistoricalEthBlockData();
 
+    // Start block indexer via Web3js
     const blockIndexer = new BlockIndexer();
     await blockIndexer.start();
   } catch (error) {

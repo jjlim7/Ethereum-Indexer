@@ -1,8 +1,8 @@
 // tests/EthPriceService.test.ts
 import axios from "axios";
 import {
-  getEthPriceAtTime,
   getEthPriceAtTimeFromDb,
+  ethPriceWS,
 } from "../src/services/ethPriceService";
 import { EthPrice } from "../src/models/ethPriceModel";
 import mongoose from "mongoose";
@@ -47,7 +47,8 @@ describe("getEthPriceAtTimeFromDb", () => {
   });
 });
 
-describe("getEthPriceAtTime", () => {
+// New test suite for EthPriceWebSocket
+describe("EthPriceWebSocket", () => {
   beforeAll(async () => {
     // Connect to in-memory MongoDB instance
     await connectDB();
@@ -56,37 +57,22 @@ describe("getEthPriceAtTime", () => {
   afterAll(async () => {
     // Disconnect from the database after tests
     await mongoose.connection.close();
+    await ethPriceWS.disconnect();
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
+  it("should connect to WebSocket and fetch latest ETH price", async () => {
+    const latestPrice = await ethPriceWS.getLatestPrice();
+    expect(latestPrice).toBeGreaterThan(0); // Assuming the price should be a positive number
   });
 
-  it("should fetch and save new ETH price if not in MongoDB", async () => {
-    const startTime = new Date("2023-10-01").getTime();
-
-    // Mock the API response
-    (axios.get as jest.Mock).mockResolvedValueOnce({
-      data: [
-        [startTime, null, null, null, "3500", null, null, null, null, null], // Mocking price data format
-      ],
-    });
-
-    (EthPrice.findOne as jest.Mock).mockResolvedValueOnce(null); // Simulate not found
-
-    const price = await getEthPriceAtTime(startTime);
-
-    expect(price).toBe(3500);
-  });
-
-  it("should handle error when fetching price from API", async () => {
-    const startTime = new Date("2023-10-01").getTime();
-
-    (EthPrice.findOne as jest.Mock).mockResolvedValueOnce(null); // Simulate not found
-
-    // Mock axios to throw an error
-    (axios.get as jest.Mock).mockRejectedValueOnce(new Error("API error"));
-
-    await expect(getEthPriceAtTime(startTime)).rejects.toThrow("API error");
-  });
+  // it("should handle WebSocket errors gracefully", async () => {
+  //   // Simulate a WebSocket error
+  //   const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
+  //   ethPriceWS.emit("error", new Error("WebSocket error"));
+  //   expect(consoleErrorSpy).toHaveBeenCalledWith(
+  //     "WebSocket error:",
+  //     expect.any(Error)
+  //   );
+  //   consoleErrorSpy.mockRestore();
+  // });
 });

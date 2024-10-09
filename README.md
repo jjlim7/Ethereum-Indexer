@@ -10,11 +10,14 @@
 ## Setup Environment Variables
 Make sure to create a .env file in the root directory of the project with the following variables:
 ```
-ETHERSCAN_API_KEY=<your-etherscan-api-key>
-MONGO_URI=<your-mongodb-uri>
-INFURA_MAINNET_WS=<your-infura-websocket-url>
-TARGET_ADDRESS=<your-target-smart-contract-address>
-KAFKA_BROKERS=<your-kafka-broker-address>
+MONGO_URI=
+MONGO_INITDB_ROOT_USERNAME=
+MONGO_INITDB_ROOT_PASSWORD=
+
+ETHERSCAN_API_KEY=
+INFURA_MAINNET_WS=
+TARGET_ADDRESS=
+KAFKA_BROKERS=
 ```
 
 ## Running the Application

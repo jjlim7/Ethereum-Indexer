@@ -24,10 +24,12 @@ class EthPriceWebSocket extends EventEmitter {
   private static instance: EthPriceWebSocket;
   private ws!: WebSocket;
   private latestPrice: number | null = null;
+  private connectionPromise!: Promise<void>; // Promise to track connection status
+  private isDisconnecting: boolean = false;
 
   private constructor() {
     super();
-    this.connect();
+    this.connectionPromise = this.connect();
   }
 
   // Method to get the singleton instance
@@ -39,31 +41,47 @@ class EthPriceWebSocket extends EventEmitter {
   }
 
   // Method to connect to the WebSocket
-  private connect() {
-    this.ws = new WebSocket("wss://ws-api.binance.com:443/ws-api/v3");
+  private connect(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.ws = new WebSocket("wss://ws-api.binance.com:443/ws-api/v3");
 
-    this.ws.on("open", () => {
-      console.log("Connected to Binance WebSocket.");
-      this.sendPriceRequest(); // Send the request to get ETHUSDT price
+      this.ws.on("open", () => {
+        console.log("Connected to Binance WebSocket.");
+        this.sendPriceRequest(); // Send the request to get ETHUSDT price
+        resolve(); // Resolve the promise when connected
+      });
+
+      this.ws.on("message", (data) => {
+        const response = JSON.parse(data.toString());
+        // Check for price updates in the response
+        if (response.status === 200) {
+          this.latestPrice = parseFloat(response.result.price);
+        }
+      });
+
+      this.ws.on("error", (error) => {
+        console.error("WebSocket error:", error);
+        reject(error); // Reject the promise on error
+      });
+
+      this.ws.on("close", () => {
+        if (!this.isDisconnecting) {
+          console.log("Disconnected from Binance WebSocket. Reconnecting...");
+          // Attempt to reconnect after a delay only if not intentionally disconnected
+          setTimeout(() => this.connect(), 5000); // Reconnect after 5 seconds
+        }
+      });
     });
+  }
 
-    this.ws.on("message", (data) => {
-      const response = JSON.parse(data.toString());
-      // Check for price updates in the response
-      if (response.status === 200) {
-        this.latestPrice = parseFloat(response.result.price);
-      }
-    });
-
-    this.ws.on("error", (error) => {
-      console.error("WebSocket error:", error);
-    });
-
-    this.ws.on("close", () => {
+  public disconnect() {
+    this.isDisconnecting = true;
+    if (this.ws.readyState === WebSocket.OPEN) {
+      this.ws.close();
       console.log("Disconnected from Binance WebSocket.");
-      // Attempt to reconnect after a delay
-      setTimeout(() => this.connect(), 5000); // Reconnect after 5 seconds
-    });
+    } else {
+      console.log("WebSocket is not connected, cannot disconnect.");
+    }
   }
 
   // Method to send the request for ETHUSDT price
@@ -80,12 +98,28 @@ class EthPriceWebSocket extends EventEmitter {
 
   // Method to get the latest price
   public async getLatestPrice(): Promise<number | null> {
+    await this.connectionPromise; // Wait for the WebSocket to be connected
     if (this.ws.readyState === WebSocket.OPEN) {
-      await this.sendPriceRequest(); // Ensure price request is sent only if WebSocket is open
+      await this.sendPriceRequest();
+      return await this.waitForLatestPrice();
     } else {
       console.log("WebSocket is not connected, can't get latest price.");
+      return null;
     }
-    return this.latestPrice;
+  }
+
+  // Method to wait for the latest price to be set
+  private waitForLatestPrice(): Promise<number | null> {
+    return new Promise((resolve) => {
+      const checkPrice = () => {
+        if (this.latestPrice !== null) {
+          resolve(this.latestPrice); // Resolve with the latest price
+        } else {
+          setTimeout(checkPrice, 100); // Check again after a short delay
+        }
+      };
+      checkPrice(); // Start checking for the latest price
+    });
   }
 }
 

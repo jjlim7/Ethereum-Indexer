@@ -21,6 +21,10 @@ export class BlockIndexer {
     this.web3 = new Web3(this.provider);
   }
 
+  public getWeb3() {
+    return this.web3;
+  }
+
   public async start() {
     console.log("Starting block indexer...");
     this.provider.on("connect", () => {
@@ -40,7 +44,12 @@ export class BlockIndexer {
     });
   }
 
-  private async processBlock(txHash: string) {
+  public async stop() {
+    await this.web3.currentProvider?.disconnect();
+    await ethPriceWS.disconnect();
+  }
+
+  public async processBlock(txHash: string) {
     try {
       const tx = await this.web3.eth.getTransaction(txHash);
       const receipt = await this.web3.eth.getTransactionReceipt(txHash);
@@ -80,7 +89,7 @@ export class BlockIndexer {
         console.log(`Saved transaction ${tx.hash}`);
       }
     } catch (error) {
-      console.error(`Error processing txHash ${txHash}:`, error);
+      console.log(`Error processing txHash ${txHash}:`);
     }
   }
 
@@ -90,33 +99,17 @@ export class BlockIndexer {
     const inputs = [
       {
         type: "address",
-        name: "sender",
+        name: "from",
         indexed: true,
       },
       {
         type: "address",
-        name: "recipient",
+        name: "to",
         indexed: true,
       },
       {
-        type: "int256",
-        name: "amount0",
-      },
-      {
-        type: "int256",
-        name: "amount1",
-      },
-      {
-        type: "uint160",
-        name: "sqrtPriceX96",
-      },
-      {
-        type: "uint128",
-        name: "liquidity",
-      },
-      {
-        type: "int24",
-        name: "tick",
+        type: "uint256",
+        name: "value",
       },
     ];
 

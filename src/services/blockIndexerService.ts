@@ -89,7 +89,7 @@ export class BlockIndexer {
         console.log(`Saved transaction ${tx.hash}`);
       }
     } catch (error) {
-      console.log(`Error processing txHash ${txHash}:`);
+      console.error(`Error processing txHash ${txHash}:`, error);
     }
   }
 
@@ -99,17 +99,33 @@ export class BlockIndexer {
     const inputs = [
       {
         type: "address",
-        name: "from",
+        name: "sender",
         indexed: true,
       },
       {
         type: "address",
-        name: "to",
+        name: "recipient",
         indexed: true,
       },
       {
-        type: "uint256",
-        name: "value",
+        type: "int256",
+        name: "amount0",
+      },
+      {
+        type: "int256",
+        name: "amount1",
+      },
+      {
+        type: "uint160",
+        name: "sqrtPriceX96",
+      },
+      {
+        type: "uint128",
+        name: "liquidity",
+      },
+      {
+        type: "int24",
+        name: "tick",
       },
     ];
 

@@ -7,6 +7,7 @@
    - [Using Docker](#using-docker)
    - [Testing REST API Interface via Swagger UI](#testing-rest-api-interface-via-swagger-ui)
 4. [Architectural Considerations](#architectural-considerations)
+5. [Why Kafka?](#why-kafka)
 
 ## Overview
 The backend system is built to keep track of all the transactions involved in the Uniswap V3 USDC/ETH pool. The system supports both real-time and historical batch data processing via Etherscan API, Web3.js, and Binance API (for ETH/USDT price)
